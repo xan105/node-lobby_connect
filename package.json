@@ -1,0 +1,53 @@
+{
+  "name": "@xan105/lobby_connect",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "lobby_connect.cjs",
+  "exports": {
+    "import": "./esm.mjs",
+    "require": "./lobby_connect.cjs"
+  },
+  "os": [
+    "win32"
+  ],
+  "engines": {
+    "node": ">=0.12"
+  },
+  "scripts": {
+    "build_dll_x86": "call lib\\src\\goldberg_emulator\\build_win_lobby_connect_dll_x86.bat",
+    "build_dll_x64": "call lib\\src\\goldberg_emulator\\build_win_lobby_connect_dll_x64.bat",
+    "lint": "npx eslint --ignore-path .gitignore ./**/*.{cjs,mjs}"
+  },
+  "keywords": [
+    "steam",
+    "emu",
+    "steamemu",
+    "goldberg",
+    "lobby",
+    "connect",
+    "lobby_connect",
+    "windows"
+  ],
+  "author": {
+    "name": "Anthony Beaumont",
+    "email": "dev.xan105@outlook.be",
+    "url": "https://xan105.com/"
+  },
+  "license": "GPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xan105/node-lobby_connect.git"
+  },
+  "bugs": {
+    "url": "https://github.com/xan105/node-lobby_connect/issues"
+  },
+  "homepage": "https://github.com/xan105/node-lobby_connect#readme",
+  "devDependencies": {
+    "eslint": "^7.4.0"
+  },
+  "dependencies": {
+    "ffi-napi": "^3.0.1",
+    "ref-struct-di": "^1.1.1"
+  }
+}
