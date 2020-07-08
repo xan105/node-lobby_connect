@@ -10,7 +10,7 @@ Install
 
 *Prequisites: VS2017 / Python 2.7(node-gyp)*
 
-```js
+```
 npm install https://github.com/xan105/node-lobby_connect
 //or
 npm install xan105/node-loby_connect
