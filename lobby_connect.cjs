@@ -3,9 +3,9 @@
 const path = require('path');
 const ffi = require('ffi-napi');
 const ref = require('ref-napi');
-const StructType = require('ref-struct-di')(ref);
+const Struct = require('ref-struct-di')(ref);
 
-const Player = StructType({
+const Player = Struct({
     name: ref.types.CString,
     appID: ref.types.int,
     connect: ref.types.CString,
@@ -55,26 +55,19 @@ const lobby = {
 };
 
 module.exports = async() => {
-  if (await lobby.ready()) 
+  if (!await lobby.ready()) throw "SteamAPI not ready"
+ 
+  let players = [];
+      
+  for (let i=0; i < await lobby.playerCount(); i++) 
   {
-    
-    let players = [];
-      
-    for (let i=0; i < await lobby.playerCount(); i++) 
-    {
-      let player = await lobby.playerInfo(i);
-      players.push({
-        name: player.name,
-        appID: player.appID,
-        connect: (player.connect.length == 0 && player.lobby) ? `+connect_lobby ${player.lobby}` : player.connect
-      });
-    }
+    let player = await lobby.playerInfo(i);
+    players.push({
+      name: player.name,
+      appID: player.appID,
+      connect: (player.connect.length == 0 && player.lobby) ? `+connect_lobby ${player.lobby}` : player.connect
+    });
+  }
 
-    return players;
-      
-   } 
-   else 
-   {
-    throw "SteamAPI not ready";
-   }
+  return players;
 }
