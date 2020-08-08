@@ -41,7 +41,13 @@ If you want to build the dll yourself please see the build instructions for the 
 When your env is set. Run the following npm script in the root dir of this package :
 
 ```js
-npm run-script build_dll_x86 //for x86
-npm run-script build_dll_x64 //for x64
+npm run-script build_x86 //for x86
+npm run-script build_x64 //for x64
+
+//or
+
+npm run-script build //for both x86 & x64
 
 ```
+
+NB: `npm run-script update` will `git pull` ./lib/src/goldberg_emulator

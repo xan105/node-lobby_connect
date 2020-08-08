@@ -15,8 +15,9 @@
     "node": ">=0.12"
   },
   "scripts": {
-    "build_dll_x86": "call lib\\src\\goldberg_emulator\\build_win_lobby_connect_dll_x86.bat",
-    "build_dll_x64": "call lib\\src\\goldberg_emulator\\build_win_lobby_connect_dll_x64.bat",
+    "build_x86": "call lib\\src\\goldberg_emulator\\build_win_lobby_connect_dll_x86.bat",
+    "build_x64": "call lib\\src\\goldberg_emulator\\build_win_lobby_connect_dll_x64.bat",
+    "build": "npm run-script build_x86 && npm run-script build_x64",
     "update": "cd lib\\src\\goldberg_emulator && git pull",
     "lint": "npx eslint --ignore-path .gitignore ./**/*.{cjs,mjs}"
   },
