@@ -16,8 +16,6 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include "base.h"
-#include "../controller/gamepad.h"
-#include <cctype>
 
 struct Controller_Map {
     std::map<ControllerDigitalActionHandle_t, std::set<int>> active_digital;
@@ -746,7 +744,10 @@ void SetLEDColor( ControllerHandle_t controllerHandle, uint8 nColorR, uint8 nCol
 int GetGamepadIndexForController( ControllerHandle_t ulControllerHandle )
 {
     PRINT_DEBUG("Steam_Controller::GetGamepadIndexForController\n");
-    return 0;
+    auto controller = controllers.find(ulControllerHandle);
+    if (controller == controllers.end()) return -1;
+
+    return ulControllerHandle - 1;
 }
 
 
@@ -754,7 +755,10 @@ int GetGamepadIndexForController( ControllerHandle_t ulControllerHandle )
 ControllerHandle_t GetControllerForGamepadIndex( int nIndex )
 {
     PRINT_DEBUG("Steam_Controller::GetControllerForGamepadIndex\n");
-    return 0;
+    ControllerHandle_t out = nIndex + 1;
+    auto controller = controllers.find(out);
+    if (controller == controllers.end()) return 0;
+    return out;
 }
 
 

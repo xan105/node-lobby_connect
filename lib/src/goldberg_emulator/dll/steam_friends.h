@@ -103,10 +103,9 @@ struct Avatar_Numbers add_friend_avatars(CSteamID id)
 
     //TODO: get real image data from self/other peers
     struct Avatar_Numbers avatar_numbers;
-    char zero_array[184 * 184 * 4] = {};
-    std::string small_avatar(zero_array, 32 * 32 * 4);
-    std::string medium_avatar(zero_array, 64 * 64 * 4);
-    std::string large_avatar(zero_array, 184 * 184 * 4);
+    std::string small_avatar(32 * 32 * 4, 0);
+    std::string medium_avatar(64 * 64 * 4, 0);
+    std::string large_avatar(184 * 184 * 4, 0);
 
     avatar_numbers.smallest = settings->add_image(small_avatar, 32, 32);
     avatar_numbers.medium = settings->add_image(medium_avatar, 64, 64);
@@ -156,12 +155,9 @@ Steam_Friends(Settings* settings, Networking* network, SteamCallResults* callbac
 
 static bool ok_friend_flags(int iFriendFlags)
 {
-    if (iFriendFlags & k_EFriendFlagBlocked) return false;
-    if (iFriendFlags & k_EFriendFlagIgnored) return false;
-    if (iFriendFlags & k_EFriendFlagIgnoredFriend) return false;
-    if (iFriendFlags & k_EFriendFlagFriendshipRequested) return false;
-    if (iFriendFlags & k_EFriendFlagRequestingFriendship) return false;
-    return true;
+    if (iFriendFlags & k_EFriendFlagImmediate) return true;
+
+    return false;
 }
 
 // returns the local players name - guaranteed to not be NULL.
@@ -218,11 +214,11 @@ EPersonaState GetPersonaState()
 // then GetFriendByIndex() can then be used to return the id's of each of those users
 int GetFriendCount( int iFriendFlags )
 {
-    PRINT_DEBUG("Steam_Friends::GetFriendCount\n");
+    PRINT_DEBUG("Steam_Friends::GetFriendCount %i\n", iFriendFlags);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     int count = 0;
     if (ok_friend_flags(iFriendFlags)) count = friends.size();
-    
+    PRINT_DEBUG("count %i\n", count);
     return count;
 }
 

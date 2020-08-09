@@ -1,12 +1,9 @@
 #ifndef __INCLUDED_BASE_HOOK_H__
 #define __INCLUDED_BASE_HOOK_H__
 
-#ifdef EMU_OVERLAY
-
-#include <vector>
-#include <utility>
-
 #include "../dll/base.h"
+
+#ifdef EMU_OVERLAY
 
 class Base_Hook
 {

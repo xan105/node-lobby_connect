@@ -21,10 +21,6 @@
 #include "base.h"
 #include "../overlay_experimental/steam_overlay.h"
 
-#include <iomanip>
-#include <fstream>
-#include "../json/json.hpp"
-
 struct Steam_Leaderboard {
     std::string name;
     ELeaderboardSortMethod sort_method;
@@ -304,7 +300,7 @@ bool GetAchievementAndUnlockTime( const char *pchName, bool *pbAchieved, uint32 
 
     if(pbAchieved != nullptr) *pbAchieved = false;
     if(punUnlockTime != nullptr) *punUnlockTime = 0;
-    return true;
+    return false;
 }
 
 

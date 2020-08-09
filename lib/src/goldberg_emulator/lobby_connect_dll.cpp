@@ -24,7 +24,7 @@ Modified from https://gitlab.com/Mr_Goldberg/goldberg_emulator/-/blob/master/lob
 */
 
 #include "sdk_includes/steam_api.h"
-#include "dll/defines.h"
+#include "dll/common_includes.h"
 
 #include <iostream>
 #include <chrono>
@@ -70,12 +70,12 @@ extern "C"
     
     __declspec(dllexport) int lobby_player_count()
     {
-      return SteamFriends()->GetFriendCount(0);
+      return SteamFriends()->GetFriendCount(k_EFriendFlagAll);
     }
     
     __declspec(dllexport) Player lobby_player_info(int i) 
     {
-       CSteamID id = SteamFriends()->GetFriendByIndex(i, 0);
+       CSteamID id = SteamFriends()->GetFriendByIndex(i, k_EFriendFlagAll);
        FriendGameInfo_t friend_info = {};
        SteamFriends()->GetFriendGamePlayed(id, &friend_info);
        
