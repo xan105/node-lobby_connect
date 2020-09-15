@@ -1,67 +1,11 @@
-//====== Copyright � 1996-2008, Valve Corporation, All rights reserved. =======
-//
-// Purpose: interface to utility functions in Steam
-//
-//=============================================================================
 
-#ifndef ISTEAMUTILS_H
-#define ISTEAMUTILS_H
+#ifndef ISTEAMUTILS009_H
+#define ISTEAMUTILS009_H
 #ifdef STEAM_WIN32
 #pragma once
 #endif
 
-#include "steam_api_common.h"
-
-
-// Steam API call failure results
-enum ESteamAPICallFailure
-{
-	k_ESteamAPICallFailureNone = -1,			// no failure
-	k_ESteamAPICallFailureSteamGone = 0,		// the local Steam process has gone away
-	k_ESteamAPICallFailureNetworkFailure = 1,	// the network connection to Steam has been broken, or was already broken
-	// SteamServersDisconnected_t callback will be sent around the same time
-	// SteamServersConnected_t will be sent when the client is able to talk to the Steam servers again
-	k_ESteamAPICallFailureInvalidHandle = 2,	// the SteamAPICall_t handle passed in no longer exists
-	k_ESteamAPICallFailureMismatchedCallback = 3,// GetAPICallResult() was called with the wrong callback type for this API call
-};
-
-
-// Input modes for the Big Picture gamepad text entry
-enum EGamepadTextInputMode
-{
-	k_EGamepadTextInputModeNormal = 0,
-	k_EGamepadTextInputModePassword = 1
-};
-
-
-// Controls number of allowed lines for the Big Picture gamepad text entry
-enum EGamepadTextInputLineMode
-{
-	k_EGamepadTextInputLineModeSingleLine = 0,
-	k_EGamepadTextInputLineModeMultipleLines = 1
-};
-
-
-// The context where text filtering is being done
-enum ETextFilteringContext
-{
-	k_ETextFilteringContextUnknown = 0,	// Unknown context
-	k_ETextFilteringContextGameContent = 1,	// Game content, only legally required filtering is performed
-	k_ETextFilteringContextChat = 2,	// Chat from another player
-	k_ETextFilteringContextName = 3,	// Character or item name
-};
-
-
-// function prototype for warning message hook
-#if defined( POSIX )
-#define __cdecl
-#endif
-extern "C" typedef void (__cdecl *SteamAPIWarningMessageHook_t)(int, const char *);
-
-//-----------------------------------------------------------------------------
-// Purpose: interface to user independent utility functions
-//-----------------------------------------------------------------------------
-class ISteamUtils
+class ISteamUtils009
 {
 public:
 	// return the number of seconds since the user 
@@ -184,121 +128,20 @@ public:
 	virtual bool IsSteamChinaLauncher() = 0;
 
 	// Initializes text filtering.
-	//   unFilterOptions are reserved for future use and should be set to 0
-	// Returns false if filtering is unavailable for the language the user is currently running in.
-	virtual bool InitFilterText( uint32 unFilterOptions = 0 ) = 0;
+	//   Returns false if filtering is unavailable for the language the user is currently running in.
+	virtual bool InitFilterText() = 0; 
 
-	// Filters the provided input message and places the filtered result into pchOutFilteredText, using legally required filtering and additional filtering based on the context and user settings
-	//   eContext is the type of content in the input string
-	//   sourceSteamID is the Steam ID that is the source of the input string (e.g. the player with the name, or who said the chat text)
+	// Filters the provided input message and places the filtered result into pchOutFilteredText.
+	//   pchOutFilteredText is where the output will be placed, even if no filtering or censoring is performed
+	//   nByteSizeOutFilteredText is the size (in bytes) of pchOutFilteredText
 	//   pchInputText is the input string that should be filtered, which can be ASCII or UTF-8
-	//   pchOutFilteredText is where the output will be placed, even if no filtering is performed
-	//   nByteSizeOutFilteredText is the size (in bytes) of pchOutFilteredText, should be at least strlen(pchInputText)+1
-	// Returns the number of characters (not bytes) filtered
-	virtual int FilterText( ETextFilteringContext eContext, CSteamID sourceSteamID, const char *pchInputMessage, char *pchOutFilteredText, uint32 nByteSizeOutFilteredText ) = 0;
+	//   bLegalOnly should be false if you want profanity and legally required filtering (where required) and true if you want legally required filtering only
+	//   Returns the number of characters (not bytes) filtered.
+	virtual int FilterText( char* pchOutFilteredText, uint32 nByteSizeOutFilteredText, const char * pchInputMessage, bool bLegalOnly ) = 0;
 
 	// Return what we believe your current ipv6 connectivity to "the internet" is on the specified protocol.
 	// This does NOT tell you if the Steam client is currently connected to Steam via ipv6.
 	virtual ESteamIPv6ConnectivityState GetIPv6ConnectivityState( ESteamIPv6ConnectivityProtocol eProtocol ) = 0;
 };
 
-#define STEAMUTILS_INTERFACE_VERSION "SteamUtils010"
-
-#ifndef STEAM_API_EXPORTS
-// Global interface accessor
-inline ISteamUtils *SteamUtils();
-STEAM_DEFINE_INTERFACE_ACCESSOR( ISteamUtils *, SteamUtils, SteamInternal_FindOrCreateUserInterface( 0, STEAMUTILS_INTERFACE_VERSION ), "user", STEAMUTILS_INTERFACE_VERSION );
-
-// Global accessor for the gameserver client
-inline ISteamUtils *SteamGameServerUtils();
-STEAM_DEFINE_INTERFACE_ACCESSOR( ISteamUtils *, SteamGameServerUtils, SteamInternal_FindOrCreateGameServerInterface( 0, STEAMUTILS_INTERFACE_VERSION ), "gameserver", STEAMUTILS_INTERFACE_VERSION );
-#endif
-
-// callbacks
-#if defined( VALVE_CALLBACK_PACK_SMALL )
-#pragma pack( push, 4 )
-#elif defined( VALVE_CALLBACK_PACK_LARGE )
-#pragma pack( push, 8 )
-#else
-#error steam_api_common.h should define VALVE_CALLBACK_PACK_xxx
-#endif 
-
-//-----------------------------------------------------------------------------
-// Purpose: The country of the user changed
-//-----------------------------------------------------------------------------
-struct IPCountry_t
-{
-	enum { k_iCallback = k_iSteamUtilsCallbacks + 1 };
-};
-
-
-//-----------------------------------------------------------------------------
-// Purpose: Fired when running on a laptop and less than 10 minutes of battery is left, fires then every minute
-//-----------------------------------------------------------------------------
-struct LowBatteryPower_t
-{
-	enum { k_iCallback = k_iSteamUtilsCallbacks + 2 };
-	uint8 m_nMinutesBatteryLeft;
-};
-
-
-//-----------------------------------------------------------------------------
-// Purpose: called when a SteamAsyncCall_t has completed (or failed)
-//-----------------------------------------------------------------------------
-struct SteamAPICallCompleted_t
-{
-	enum { k_iCallback = k_iSteamUtilsCallbacks + 3 };
-	SteamAPICall_t m_hAsyncCall;
-	int m_iCallback;
-	uint32 m_cubParam;
-};
-
-
-//-----------------------------------------------------------------------------
-// called when Steam wants to shutdown
-//-----------------------------------------------------------------------------
-struct SteamShutdown_t
-{
-	enum { k_iCallback = k_iSteamUtilsCallbacks + 4 };
-};
-
-//-----------------------------------------------------------------------------
-// results for CheckFileSignature
-//-----------------------------------------------------------------------------
-enum ECheckFileSignature
-{
-	k_ECheckFileSignatureInvalidSignature = 0,
-	k_ECheckFileSignatureValidSignature = 1,
-	k_ECheckFileSignatureFileNotFound = 2,
-	k_ECheckFileSignatureNoSignaturesFoundForThisApp = 3,
-	k_ECheckFileSignatureNoSignaturesFoundForThisFile = 4,
-};
-
-//-----------------------------------------------------------------------------
-// callback for CheckFileSignature
-//-----------------------------------------------------------------------------
-struct CheckFileSignature_t
-{
-	enum { k_iCallback = k_iSteamUtilsCallbacks + 5 };
-	ECheckFileSignature m_eCheckFileSignature;
-};
-
-
-// k_iSteamUtilsCallbacks + 13 is taken
-
-
-//-----------------------------------------------------------------------------
-// Big Picture gamepad text input has been closed
-//-----------------------------------------------------------------------------
-struct GamepadTextInputDismissed_t
-{
-	enum { k_iCallback = k_iSteamUtilsCallbacks + 14 };
-	bool m_bSubmitted;										// true if user entered & accepted text (Call ISteamUtils::GetEnteredGamepadTextInput() for text), false if canceled input
-	uint32 m_unSubmittedText;
-};
-
-// k_iSteamUtilsCallbacks + 15 is taken
-
-#pragma pack( pop )
-
-#endif // ISTEAMUTILS_H
+#endif // ISTEAMUTILS009_H
