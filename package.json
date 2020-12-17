@@ -36,7 +36,7 @@
     "email": "dev.xan105@outlook.be",
     "url": "https://xan105.com/"
   },
-  "license": "GPL-3.0",
+  "license": "LGPL-3.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/xan105/node-lobby_connect.git"
