@@ -779,7 +779,9 @@ bool SetLobbyData( CSteamID steamIDLobby, const char *pchKey, const char *pchVal
         (*lobby->mutable_values())[result->first] = pchValue;
     }
 
-    trigger_lobby_dataupdate(steamIDLobby, steamIDLobby, true, 0.0, changed);
+    if (changed)
+        trigger_lobby_dataupdate(steamIDLobby, steamIDLobby, true, 0.005, changed);
+
     return true;
 }
 
