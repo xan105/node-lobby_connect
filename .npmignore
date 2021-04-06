@@ -1,3 +1,4 @@
 .github/
 test/
 lib/src/
+.eslintrc.json

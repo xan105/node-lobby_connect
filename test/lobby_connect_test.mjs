@@ -1,4 +1,4 @@
-import lobby from '../esm.mjs';
+import lobby from '../lib/esm.mjs';
 
 setInterval(function(){ 
   lobby().then(console.log).catch(console.error);
