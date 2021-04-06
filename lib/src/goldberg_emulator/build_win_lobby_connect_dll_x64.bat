@@ -9,4 +9,4 @@ cl dll/rtlgenrandom.c dll/rtlgenrandom.def
 cl /DNO_DISK_WRITES /DLOBBY_CONNECT /DEMU_RELEASE_BUILD /DNDEBUG /I%PROTOBUF_X64_DIRECTORY%\include\ lobby_connect_dll.cpp dll/*.cpp dll/*.cc "%PROTOBUF_X64_LIBRARY%" Iphlpapi.lib Ws2_32.lib rtlgenrandom.lib Shell32.lib Comdlg32.lib /EHsc /MP12 /Ox /link /DLL /debug:none /OUT:release\lobby_connect\lobby_connect_x64.dll
 del /Q /S release\lobby_connect\*.lib
 del /Q /S release\lobby_connect\*.exp
-xcopy /Y "release\lobby_connect\lobby_connect_x64.dll" "..\..\lobby_connect_x64.dll"
+xcopy /Y "release\lobby_connect\lobby_connect_x64.dll" "..\..\dist\lobby_connect_x64.dll"
