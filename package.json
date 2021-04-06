@@ -1,6 +1,6 @@
 {
   "name": "@xan105/lobby_connect",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Library to use lobby_connect from Goldberg SteamEmu in Node.js : discovers people playing on the network using the Goldberg SteamEmu with the launch parameters to connect to their games.",
   "type": "module",
   "main": "./lib/lobby_connect.cjs",
