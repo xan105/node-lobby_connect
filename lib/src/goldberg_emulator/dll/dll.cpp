@@ -187,7 +187,7 @@ static void *create_client_interface(const char *ver)
 STEAMAPI_API void * S_CALLTYPE SteamInternal_CreateInterface( const char *ver )
 {
     PRINT_DEBUG("SteamInternal_CreateInterface %s\n", ver);
-    if (!get_steam_client()->user_logged_in) return NULL;
+    if (!get_steam_client()->user_logged_in && !get_steam_client()->IsServerInit()) return NULL;
 
     return create_client_interface(ver);
 }
@@ -509,6 +509,7 @@ STEAMAPI_API bool S_CALLTYPE SteamAPI_InitSafe()
 STEAMAPI_API ISteamClient *SteamClient() {
     PRINT_DEBUG("SteamClient()\n");
     load_old_interface_versions();
+    if (!get_steam_client()->user_logged_in) return NULL;
     return (ISteamClient *)SteamInternal_CreateInterface(old_client);
 }
 
@@ -768,7 +769,7 @@ STEAMAPI_API void S_CALLTYPE SteamAPI_ManualDispatch_RunFrame( HSteamPipe hSteam
 /// Fetch the next pending callback on the given pipe, if any.  If a callback is available, true is returned
 /// and the structure is populated.  In this case, you MUST call SteamAPI_ManualDispatch_FreeLastCallback
 /// (after dispatching the callback) before calling SteamAPI_ManualDispatch_GetNextCallback again.
-STEAMAPI_API bool S_CALLTYPE SteamAPI_ManualDispatch_GetNextCallback( HSteamPipe hSteamPipe, CallbackMsg_t *pCallbackMsg )
+STEAMAPI_API steam_bool S_CALLTYPE SteamAPI_ManualDispatch_GetNextCallback( HSteamPipe hSteamPipe, CallbackMsg_t *pCallbackMsg )
 {
     PRINT_DEBUG("%s\n", __FUNCTION__);
     std::queue<struct cb_data> *q = NULL;
@@ -828,7 +829,7 @@ STEAMAPI_API void S_CALLTYPE SteamAPI_ManualDispatch_FreeLastCallback( HSteamPip
 
 /// Return the call result for the specified call on the specified pipe.  You really should
 /// only call this in a handler for SteamAPICallCompleted_t callback.
-STEAMAPI_API bool S_CALLTYPE SteamAPI_ManualDispatch_GetAPICallResult( HSteamPipe hSteamPipe, SteamAPICall_t hSteamAPICall, void *pCallback, int cubCallback, int iCallbackExpected, bool *pbFailed )
+STEAMAPI_API steam_bool S_CALLTYPE SteamAPI_ManualDispatch_GetAPICallResult( HSteamPipe hSteamPipe, SteamAPICall_t hSteamAPICall, void *pCallback, int cubCallback, int iCallbackExpected, bool *pbFailed )
 {
     PRINT_DEBUG("SteamAPI_ManualDispatch_GetAPICallResult %i %llu %i %i\n", hSteamPipe, hSteamAPICall, cubCallback, iCallbackExpected);
     Steam_Client *steam_client = get_steam_client();
@@ -960,7 +961,7 @@ SteamMasterServerUpdater
 */
 
 
-STEAMCLIENT_API bool Steam_BGetCallback( HSteamPipe hSteamPipe, CallbackMsg_t *pCallbackMsg )
+STEAMCLIENT_API steam_bool Steam_BGetCallback( HSteamPipe hSteamPipe, CallbackMsg_t *pCallbackMsg )
 {
     PRINT_DEBUG("%s %i\n", __FUNCTION__, hSteamPipe);
     SteamAPI_ManualDispatch_Init();
@@ -975,7 +976,7 @@ STEAMCLIENT_API void Steam_FreeLastCallback( HSteamPipe hSteamPipe )
     SteamAPI_ManualDispatch_FreeLastCallback( hSteamPipe );
 }
 
-STEAMCLIENT_API bool Steam_GetAPICallResult( HSteamPipe hSteamPipe, SteamAPICall_t hSteamAPICall, void* pCallback, int cubCallback, int iCallbackExpected, bool* pbFailed )
+STEAMCLIENT_API steam_bool Steam_GetAPICallResult( HSteamPipe hSteamPipe, SteamAPICall_t hSteamAPICall, void* pCallback, int cubCallback, int iCallbackExpected, bool* pbFailed )
 {
     PRINT_DEBUG("Steam_GetAPICallResult %i %llu %i %i\n", hSteamPipe, hSteamAPICall, cubCallback, iCallbackExpected);
     return SteamAPI_ManualDispatch_GetAPICallResult(hSteamPipe, hSteamAPICall, pCallback, cubCallback, iCallbackExpected, pbFailed);

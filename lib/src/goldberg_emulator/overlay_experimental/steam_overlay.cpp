@@ -428,7 +428,7 @@ void Steam_Overlay::BuildFriendWindow(Friend const& frd, friend_window_state& st
     {
         state.window_state &= ~window_state_need_attention;
     }
-    ImGui::SetNextWindowSizeConstraints(ImVec2{ width, ImGui::GetFontSize()*8 + ImGui::GetItemsLineHeightWithSpacing()*4 },
+    ImGui::SetNextWindowSizeConstraints(ImVec2{ width, ImGui::GetFontSize()*8 + ImGui::GetFrameHeightWithSpacing()*4 },
         ImVec2{ std::numeric_limits<float>::max() , std::numeric_limits<float>::max() });
 
     // Window id is after the ###, the window title is the friend name
@@ -457,8 +457,7 @@ void Steam_Overlay::BuildFriendWindow(Friend const& frd, friend_window_state& st
             }
         }
 
-        ImGui::ColoredInputTextMultiline("##chat_history", &state.chat_history[0], state.chat_history.length(), { -1.0f, 0 }, ImGuiInputTextFlags_ReadOnly);
-
+        ImGui::InputTextMultiline("##chat_history", &state.chat_history[0], state.chat_history.length(), { -1.0f, 0 }, ImGuiInputTextFlags_ReadOnly);
         // TODO: Fix the layout of the chat line + send button.
         // It should be like this: chat input should fill the window size minus send button size (button size is fixed)
         // |------------------------------|
@@ -699,7 +698,7 @@ void Steam_Overlay::Callback(Common_Message *msg)
         {
             Steam_Messages const& steam_message = msg->steam_messages();
             // Change color to cyan for friend
-            friend_info->second.chat_history.append("\x1""00FFFFFF", 9).append(steam_message.message()).append("\n", 1);
+            friend_info->second.chat_history.append(steam_message.message()).append("\n", 1);
             if (!(friend_info->second.window_state & window_state_show))
             {
                 friend_info->second.window_state |= window_state_need_attention;
@@ -759,7 +758,7 @@ void Steam_Overlay::RunCallbacks()
                     msg.set_dest_id(friend_id);
                     network->sendTo(&msg, true);
 
-                    friend_info->second.chat_history.append("\x1""00FF00FF", 9).append(input).append("\n", 1);
+                    friend_info->second.chat_history.append(input).append("\n", 1);
                 }
                 *input = 0; // Reset the input field
                 friend_info->second.window_state &= ~window_state_send_message;
@@ -788,22 +787,34 @@ void Steam_Overlay::RunCallbacks()
                     callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
 
                     friend_info->second.window_state &= ~window_state_lobby_invite;
-                } else
+                } else {
                 // The user got a rich presence invite and accepted it
-                if (friend_info->second.window_state & window_state_rich_invite)
-                {
-                    GameRichPresenceJoinRequested_t data = {};
-                    data.m_steamIDFriend.SetFromUint64(friend_id);
-                    strncpy(data.m_rgchConnect, friend_info->second.connect, k_cchMaxRichPresenceValueLength - 1);
-                    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+                    if (friend_info->second.window_state & window_state_rich_invite)
+                    {
+                        GameRichPresenceJoinRequested_t data = {};
+                        data.m_steamIDFriend.SetFromUint64(friend_id);
+                        strncpy(data.m_rgchConnect, friend_info->second.connect, k_cchMaxRichPresenceValueLength - 1);
+                        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
 
-                    friend_info->second.window_state &= ~window_state_rich_invite;
-                } else if (connect.length() > 0)
-                {
-                    GameRichPresenceJoinRequested_t data = {};
-                    data.m_steamIDFriend.SetFromUint64(friend_id);
-                    strncpy(data.m_rgchConnect, connect.c_str(), k_cchMaxRichPresenceValueLength - 1);
-                    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+                        friend_info->second.window_state &= ~window_state_rich_invite;
+                    } else if (connect.length() > 0)
+                    {
+                        GameRichPresenceJoinRequested_t data = {};
+                        data.m_steamIDFriend.SetFromUint64(friend_id);
+                        strncpy(data.m_rgchConnect, connect.c_str(), k_cchMaxRichPresenceValueLength - 1);
+                        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+                    }
+
+                    //Not sure about this but it fixes sonic racing transformed invites
+                    FriendGameInfo_t friend_game_info = {};
+                    steamFriends->GetFriendGamePlayed(friend_id, &friend_game_info);
+                    uint64 lobby_id = friend_game_info.m_steamIDLobby.ConvertToUint64();
+                    if (lobby_id) {
+                        GameLobbyJoinRequested_t data;
+                        data.m_steamIDLobby.SetFromUint64(lobby_id);
+                        data.m_steamIDFriend.SetFromUint64(friend_id);
+                        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+                    }
                 }
 
                 friend_info->second.window_state &= ~window_state_join;

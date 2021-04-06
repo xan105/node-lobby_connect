@@ -119,9 +119,24 @@ message Networking_Sockets {
     }
 
     Types type = 1;
-    uint32 port = 2;
+    int32 virtual_port = 2;
+    int32 real_port = 6;
     uint64 connection_id = 3;
     uint64 connection_id_from = 4;
+    bytes data = 5;
+}
+
+message Networking_Messages {
+    enum Types {
+        CONNECTION_NEW = 0;
+        CONNECTION_ACCEPT = 1;
+        CONNECTION_END = 2;
+        DATA = 3;
+    }
+
+    Types type = 1;
+    uint32 channel = 2;
+    uint32 id_from = 3;
     bytes data = 5;
 }
 
@@ -212,6 +227,7 @@ message Common_Message {
         Network_Old network_old = 12;
         Networking_Sockets networking_sockets = 13;
         Steam_Messages steam_messages = 14;
+        Networking_Messages networking_messages = 15;
     }
 
     uint32 source_ip = 128;

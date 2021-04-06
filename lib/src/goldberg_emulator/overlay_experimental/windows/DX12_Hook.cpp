@@ -165,7 +165,7 @@ void DX12_Hook::prepareForOverlay(IDXGISwapChain* pSwapChain)
         ImGuiIO& io = ImGui::GetIO();
         io.IniFilename = NULL;
     
-        ImGui_ImplDX12_Init(pDevice, bufferCount, DXGI_FORMAT_R8G8B8A8_UNORM,
+        ImGui_ImplDX12_Init(pDevice, bufferCount, DXGI_FORMAT_R8G8B8A8_UNORM, NULL,
             pSrvDescHeap->GetCPUDescriptorHandleForHeapStart(),
             pSrvDescHeap->GetGPUDescriptorHandleForHeapStart());
         
