@@ -46,7 +46,7 @@ Previous version(s) are CommonJS (CJS) with an ESM wrapper.
 
 ## Default export
 
-### `function(): obj[]`
+### `function(): Promise<obj[]>`
 
 Discover people playing on the network.
 

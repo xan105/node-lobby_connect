@@ -4,4 +4,4 @@ declare interface IPlayer {
   connect: string
 }
 
-export default function(): IPlayer[];
+export default function(): Promise<IPlayer[]>;
