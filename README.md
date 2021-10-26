@@ -1,7 +1,7 @@
 About
 =====
 
-Library to use `lobby_connect` from [Goldberg SteamEmu](https://gitlab.com/Mr_Goldberg/goldberg_emulator) in Node.js.
+Library to use `lobby_connect` from [Goldberg SteamEmu](https://gitlab.com/Mr_Goldberg/goldberg_emulator) in Node.js.<br/>
 Using 'node-ffi-napi' and 'lobby_connect.exe' recompiled as a dll.
 
 Discover people playing on the network using the Goldberg SteamEmu with the launch parameter to connect to their game.
