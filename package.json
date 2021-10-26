@@ -46,7 +46,7 @@
   },
   "homepage": "https://github.com/xan105/node-lobby_connect#readme",
   "devDependencies": {
-    "eslint": "^7.6.0"
+    "eslint": "^8.1.0"
   },
   "dependencies": {
     "ffi-napi": "^4.0.3",
