@@ -6,7 +6,7 @@ Library to use `lobby_connect` from [Goldberg SteamEmu](https://gitlab.com/Mr_Go
 Using `node-ffi-napi` and `lobby_connect.exe` recompiled as a dll.<br/>
 cf: https://gitlab.com/Mr_Goldberg/goldberg_emulator/-/issues/96
 
-:bulb: Usage without Node/JavaScript is also [explained down below](https://github.com/xan105/node-lobby_connect#Usage-without-Node-JavaScript).
+:bulb: Usage without Node/JavaScript is also [explained down below](https://github.com/xan105/node-lobby_connect#usage-without-node--javascript).
 
 Feel free to make a cool looking GUI for this 😃
 <p align="center">
