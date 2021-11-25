@@ -6,6 +6,8 @@ Library to use `lobby_connect` from [Goldberg SteamEmu](https://gitlab.com/Mr_Go
 Using `node-ffi-napi` and `lobby_connect.exe` recompiled as a dll.<br/>
 cf: https://gitlab.com/Mr_Goldberg/goldberg_emulator/-/issues/96
 
+:bulb: Usage without Node/JavaScript is also [explained down below](https://github.com/xan105/node-lobby_connect#Usage-without-Node-JavaScript).
+
 Feel free to make a cool looking GUI for this 😃
 <p align="center">
 <img src="https://github.com/xan105/node-lobby_connect/raw/master/screenshot/gui.png"><br />
@@ -74,3 +76,37 @@ npm run-script build //for both x86 & x64
 ```
 
 NB: `npm run-script update` will `git pull` ./lib/src/goldberg_emulator
+
+Usage without Node / JavaScript
+===============================
+
+You can bind directly to the dynamic link library (dll) found in `lib/dist` with any lang that allows for FFI (_Foreign Function Interface_) with standard C declaration (c-shared).
+
+Have a look at the bindings in `lib/lobby.js` to get a feel for it. Even if you don't know any JavaScript. It's rather simple.
+
+There are 3 functions exported : 
+ - lobby_ready(int delay): int
+ - lobby_player_count(): int
+ - lobby_player_info(int playerIndex): `<Player>`
+
+ `<Player>` being the following Struct:
+```c
+struct {
+  const char *name;
+  int appID;
+  const char *connect;
+  uint64 lobby;
+};
+```
+
+1. Use `lobby_ready()` with a delay to wait for a few seconds for connections (_delay * 10_) (Originally Mr. Goldberg uses 200ms).<br/>
+It returns 1 (true) if SteamAPI is initialized; 0 (false) otherwise.
+
+2. Use `lobby_player_count()` to get how many people they are on the network.
+
+3. Loop until max number of people from the above (_step2_) using `lobby_player_info()` to get each player information (Player Struct).
+
+If you have a `connect` string then that's your connect argument to pass to the game;
+Otherwise transform the uint64 lobby to a string and append "+connect_lobby" to it.
+
+Dont' forget credits and license and you are done :wink:
