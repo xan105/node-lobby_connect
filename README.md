@@ -36,7 +36,9 @@ setInterval(function(){
 Install
 =======
 
-`npm install @xan105/lobby_connect`
+```
+npm install @xan105/lobby_connect
+```
 
 _Prerequisite: C/C++ build tools and Python 3.x (node-gyp) in order to build [node-ffi-napi](https://www.npmjs.com/package/ffi-napi)_
 
@@ -48,7 +50,7 @@ Previous version(s) are CommonJS (CJS) with an ESM wrapper.
 
 ## Default export
 
-### `function(): Promise<obj[]>`
+### `(): Promise<obj[]>`
 
 Discover people playing on the network.
 

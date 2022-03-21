@@ -1,4 +1,4 @@
-import lobby from '../lib/esm.js';
+import lobby from '../lib/index.js';
 
 setInterval(function(){ 
   lobby()
