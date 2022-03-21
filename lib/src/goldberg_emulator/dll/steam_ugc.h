@@ -39,6 +39,7 @@ public ISteamUGC010,
 public ISteamUGC012,
 public ISteamUGC013,
 public ISteamUGC014,
+public ISteamUGC015,
 public ISteamUGC
 {
     class Settings *settings;
@@ -203,6 +204,7 @@ bool GetQueryUGCTagDisplayName( UGCQueryHandle_t handle, uint32 index, uint32 in
 bool GetQueryUGCPreviewURL( UGCQueryHandle_t handle, uint32 index, STEAM_OUT_STRING_COUNT(cchURLSize) char *pchURL, uint32 cchURLSize )
 {
     PRINT_DEBUG("Steam_UGC::GetQueryUGCPreviewURL\n");
+    //TODO: escape simulator tries downloading this url and unsubscribes if it fails
     return false;
 }
 
@@ -412,6 +414,17 @@ bool AddRequiredKeyValueTag( UGCQueryHandle_t handle, const char *pKey, const ch
     return true;
 }
 
+bool SetTimeCreatedDateRange( UGCQueryHandle_t handle, RTime32 rtStart, RTime32 rtEnd )
+{
+    PRINT_DEBUG("Steam_UGC::SetTimeCreatedDateRange\n");
+    return true;
+}
+
+bool SetTimeUpdatedDateRange( UGCQueryHandle_t handle, RTime32 rtStart, RTime32 rtEnd )
+{
+    PRINT_DEBUG("Steam_UGC::SetTimeUpdatedDateRange\n");
+    return true;
+}
 
 // DEPRECATED - Use CreateQueryUGCDetailsRequest call above instead!
 SteamAPICall_t RequestUGCDetails( PublishedFileId_t nPublishedFileID, uint32 unMaxAgeSeconds )
@@ -855,5 +868,21 @@ SteamAPICall_t DeleteItem( PublishedFileId_t nPublishedFileID )
     PRINT_DEBUG("Steam_UGC::DeleteItem\n");
     return 0;
 }
+
+// Show the app's latest Workshop EULA to the user in an overlay window, where they can accept it or not
+bool ShowWorkshopEULA()
+{
+    PRINT_DEBUG("%s\n", __FUNCTION__);
+    return false;
+}
+
+// Retrieve information related to the user's acceptance or not of the app's specific Workshop EULA
+STEAM_CALL_RESULT( WorkshopEULAStatus_t )
+SteamAPICall_t GetWorkshopEULAStatus()
+{
+    PRINT_DEBUG("%s\n", __FUNCTION__);
+    return 0;
+}
+
 
 };
