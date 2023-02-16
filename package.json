@@ -1,9 +1,14 @@
 {
   "name": "@xan105/lobby_connect",
-  "version": "2.0.2",
+  "version": "2.1.0",
   "description": "Library to use lobby_connect from Goldberg SteamEmu in Node.js : discover people playing on the network using the Goldberg SteamEmu with the launch parameter to connect to their game.",
   "type": "module",
-  "exports": "./lib/index.js",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./lib/index.js"
+    }
+  },
   "types": "./types/index.d.ts",
   "os": [
     "win32"
@@ -42,12 +47,26 @@
     "url": "https://github.com/xan105/node-lobby_connect/issues"
   },
   "homepage": "https://github.com/xan105/node-lobby_connect#readme",
+  "funding": [
+    {
+      "type": "github",
+      "url": "https://github.com/sponsors/xan105"
+    },
+    {
+      "type": "paypal",
+      "url": "https://www.paypal.me/xan105"
+    },
+    {
+      "type": "patreon",
+      "url": "https://www.patreon.com/xan105"
+    }
+  ],
   "devDependencies": {
-    "eslint": "^8.11.0"
+    "eslint": "^8.34.0"
   },
   "dependencies": {
-    "@xan105/error": "^1.2.0",
-    "ffi-napi": "^4.0.3",
-    "ref-struct-di": "^1.1.1"
+    "@xan105/error": "^1.5.0",
+    "@xan105/ffi": "^0.2.0",
+    "koffi": "^2.3.4"
   }
 }
