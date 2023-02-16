@@ -27,6 +27,8 @@ static uint32_t upper_range_ips[MAX_BROADCASTS];
 #define HEARTBEAT_TIMEOUT 20.0
 #define USER_TIMEOUT 20.0
 
+#define MAX_UDP_SIZE 16384
+
 #if defined(STEAM_WIN32)
 
 //windows xp support
@@ -215,6 +217,11 @@ static int set_socket_nonblocking(sock_t sock)
 #endif
 }
 
+static bool disable_nagle(sock_t sock)
+{
+    int set = 1;
+    return (setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, (char *)&set, sizeof(set)) == 0);
+}
 
 static void kill_socket(sock_t sock)
 {
@@ -314,7 +321,13 @@ static bool send_broadcasts(sock_t sock, uint16 port, char *data, unsigned long 
     if (number_broadcasts < 0 || check_timedout(last_get_broadcast_info, 60.0)) {
         PRINT_DEBUG("get_broadcast_info\n");
         get_broadcast_info(port);
-        set_adapter_ips(lower_range_ips, upper_range_ips, number_broadcasts);
+        std::vector<uint32_t> lower_range(lower_range_ips, lower_range_ips + number_broadcasts), upper_range(upper_range_ips, upper_range_ips + number_broadcasts);
+        for(auto &addr : *custom_broadcasts) {
+            lower_range.push_back(addr.ip);
+            upper_range.push_back(addr.ip);
+        }
+
+        set_whitelist_ips(lower_range.data(), upper_range.data(), lower_range.size());
         last_get_broadcast_info = std::chrono::high_resolution_clock::now();
     }
 
@@ -745,7 +758,6 @@ Networking::Networking(CSteamID id, uint32 appid, uint16 port, std::set<IP_PORT>
 {
     tcp_port = udp_port = port;
     own_ip = 0x7F000001;
-    alive = true;
     last_run = std::chrono::high_resolution_clock::now();
     this->appid = appid;
 
@@ -837,6 +849,21 @@ Networking::Networking(CSteamID id, uint32 appid, uint16 port, std::set<IP_PORT>
     reset_last_error();
 }
 
+Networking::~Networking()
+{
+    for (auto &c : connections) {
+        kill_tcp_socket(c.tcp_socket_incoming);
+        kill_tcp_socket(c.tcp_socket_outgoing);
+    }
+
+    for (auto &c : accepted) {
+        kill_tcp_socket(c);
+    }
+
+    kill_socket(udp_socket);
+    kill_socket(tcp_socket);
+}
+
 Common_Message Networking::create_announce(bool request)
 {
     Announce *announce = new Announce();
@@ -900,7 +927,7 @@ void Networking::Run()
     }
 
     IP_PORT ip_port;
-    char data[2048];
+    char data[MAX_UDP_SIZE];
     int len;
 
     PRINT_DEBUG("RECV UDP\n");
@@ -958,6 +985,7 @@ void Networking::Run()
         struct TCP_Socket socket;
         if (set_socket_nonblocking(sock)) {
             PRINT_DEBUG("SET NONBLOCK\n");
+            disable_nagle(sock);
             socket.sock = sock;
             socket.received_data = true;
             socket.last_heartbeat_received = std::chrono::high_resolution_clock::now();
@@ -1011,6 +1039,7 @@ void Networking::Run()
             sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
             if (is_socket_valid(sock) && set_socket_nonblocking(sock)) {
                 PRINT_DEBUG("NEW SOCKET %u %u\n", sock, conn.tcp_socket_outgoing.sock);
+                disable_nagle(sock);
                 connect_socket(sock, conn.tcp_ip_port);
                 conn.tcp_socket_outgoing.sock = sock;
                 conn.tcp_socket_outgoing.last_heartbeat_received = std::chrono::high_resolution_clock::now();
@@ -1120,9 +1149,12 @@ void Networking::setAppID(uint32 appid)
 
 bool Networking::sendToIPPort(Common_Message *msg, uint32 ip, uint16 port, bool reliable)
 {
+    bool is_local_ip = ((ip >> 24) == 0x7F);
+    uint32_t local_ip = getIP(ids.front());
+    PRINT_DEBUG("sendToIPPort %X %u %X\n", ip, is_local_ip, local_ip);
     //TODO: actually send to ip/port
     for (auto &conn: connections) {
-        if (ntohl(conn.tcp_ip_port.ip) == ip) {
+        if (ntohl(conn.tcp_ip_port.ip) == ip || (is_local_ip && ntohl(conn.tcp_ip_port.ip) == local_ip)) {
             for (auto &steam_id : conn.ids) {
                 msg->set_dest_id(steam_id.ConvertToUint64());
                 sendTo(msg, reliable, &conn);
@@ -1146,6 +1178,9 @@ uint32 Networking::getIP(CSteamID id)
 bool Networking::sendTo(Common_Message *msg, bool reliable, Connection *conn)
 {
     if (!enabled) return false;
+
+    size_t size = msg->ByteSizeLong();
+    if (size >= MAX_UDP_SIZE) reliable = true; //too big for UDP
 
     bool ret = false;
     CSteamID dest_id((uint64)msg->dest_id());
@@ -1172,7 +1207,6 @@ bool Networking::sendTo(Common_Message *msg, bool reliable, Connection *conn)
                 ret = true;
             }
         } else {
-            size_t size = msg->ByteSizeLong(); 
             char *buffer = new char[size];
             msg->SerializeToArray(buffer, size);
             send_packet_to(udp_socket, conn->udp_ip_port, buffer, size);
@@ -1253,14 +1287,4 @@ bool Networking::setCallback(Callback_Ids id, CSteamID steam_id, void (*message_
 uint32 Networking::getOwnIP()
 {
     return own_ip;
-}
-
-void Networking::shutDown()
-{
-    alive = false;
-}
-
-bool Networking::isAlive()
-{
-    return alive;
 }

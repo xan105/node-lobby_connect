@@ -66,7 +66,7 @@ struct Controller_Action {
 
 struct Rumble_Thread_Data {
     std::condition_variable rumble_thread_cv;
-    std::atomic_bool kill_rumble_thread;
+    bool kill_rumble_thread;
     std::mutex rumble_mutex;
 
     struct Rumble_Data {
@@ -91,6 +91,7 @@ enum EXTRA_GAMEPAD_BUTTONS {
 
 #define JOY_ID_START 10
 #define STICK_DPAD 3
+#define DEADZONE_BUTTON_STICK 0.3
 
 class Steam_Controller :
 public ISteamController001,
@@ -231,38 +232,21 @@ public:
 
 static void background_rumble(Rumble_Thread_Data *data)
 {
-    std::mutex mtx;
-    std::unique_lock<std::mutex> lck(mtx);
-    bool rumbled = false;
     while (true) {
-        bool new_data = false;
-        if (rumbled) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(20));
-            data->rumble_mutex.lock();
-            for (int i = 0; i < GAMEPAD_COUNT; ++i) {
-                if (data->data[i].new_data) {
-                    new_data = true;
-                    break;
-                }
-            }
-            data->rumble_mutex.unlock();
-
+        unsigned short left, right;
+        unsigned int rumble_length_ms;
+        int gamepad = -1;
+        while (gamepad == -1) {
+            std::unique_lock<std::mutex> lck(data->rumble_mutex);
             if (data->kill_rumble_thread) {
                 return;
             }
-        }
 
-        bool x = new_data || data->rumble_thread_cv.wait_for(lck, std::chrono::milliseconds(100)) != std::cv_status::timeout;
-        if (data->kill_rumble_thread) {
-            return;
-        }
+            data->rumble_thread_cv.wait_for(lck, std::chrono::milliseconds(1000));
+            if (data->kill_rumble_thread) {
+                return;
+            }
 
-        rumbled = false;
-        while (true) {
-            unsigned short left, right;
-            unsigned int rumble_length_ms;
-            int gamepad = -1;
-            data->rumble_mutex.lock();
             for (int i = 0; i < GAMEPAD_COUNT; ++i) {
                 if (data->data[i].new_data) {
                     left = data->data[i].left;
@@ -277,15 +261,9 @@ static void background_rumble(Rumble_Thread_Data *data)
                     }
                 }
             }
-
-            data->rumble_mutex.unlock();
-            if (gamepad == -1) {
-                break;
-            }
-
-            GamepadSetRumble((GAMEPAD_DEVICE)gamepad, ((double)left) / 65535.0, ((double)right) / 65535.0, rumble_length_ms);
-            rumbled = true;
         }
+
+        GamepadSetRumble((GAMEPAD_DEVICE)gamepad, ((double)left) / 65535.0, ((double)right) / 65535.0, rumble_length_ms);
     }
 }
 
@@ -332,9 +310,9 @@ bool Init(bool bExplicitlyCallRunFrame)
 
     for (int i = 1; i < 5; ++i) {
         struct Controller_Action cont_action(i);
-        //Activate the action set if there is only one present.
-        //TODO: I don't know if one gets activated by default when there's more than one
-        if (action_handles.size() == 1) {
+        //Activate the first action set.
+        //TODO: check exactly what decides which gets activated by default
+        if (action_handles.size() >= 1) {
             cont_action.activate_action_set(action_handles.begin()->second, controller_maps);
         }
 
@@ -369,7 +347,9 @@ bool Shutdown()
     }
 
     controllers = std::map<ControllerHandle_t, struct Controller_Action>();
+    rumble_thread_data->rumble_mutex.lock();
     rumble_thread_data->kill_rumble_thread = true;
+    rumble_thread_data->rumble_mutex.unlock();
     rumble_thread_data->rumble_thread_cv.notify_one();
     background_rumble_thread.join();
     delete rumble_thread_data;
@@ -522,6 +502,7 @@ void ActivateActionSet( ControllerHandle_t controllerHandle, ControllerActionSet
 
 ControllerActionSetHandle_t GetCurrentActionSet( ControllerHandle_t controllerHandle )
 {
+    //TODO: should return zero if no action set specifically activated with ActivateActionSet
     PRINT_DEBUG("Steam_Controller::GetCurrentActionSet %llu\n", controllerHandle);
     auto controller = controllers.find(controllerHandle);
     if (controller == controllers.end()) return 0;
@@ -606,17 +587,31 @@ ControllerDigitalActionData_t GetDigitalActionData( ControllerHandle_t controlle
                 case BUTTON_STICK_LEFT_UP:
                 case BUTTON_STICK_LEFT_DOWN:
                 case BUTTON_STICK_LEFT_LEFT:
-                case BUTTON_STICK_LEFT_RIGHT:
-                    pressed = GamepadStickLength(device, STICK_LEFT) > 0.1 &&
-                                        ((int)GamepadStickDir(device, STICK_LEFT) == ((button - BUTTON_STICK_LEFT_UP) + 1));
+                case BUTTON_STICK_LEFT_RIGHT: {
+                    float x = 0, y = 0, len = GamepadStickLength(device, STICK_LEFT);
+                    GamepadStickNormXY(device, STICK_LEFT, &x, &y);
+                    x *= len;
+                    y *= len;
+                    if (button == BUTTON_STICK_LEFT_UP) pressed = y > DEADZONE_BUTTON_STICK;
+                    if (button == BUTTON_STICK_LEFT_DOWN) pressed = y < -DEADZONE_BUTTON_STICK;
+                    if (button == BUTTON_STICK_LEFT_RIGHT) pressed = x > DEADZONE_BUTTON_STICK;
+                    if (button == BUTTON_STICK_LEFT_LEFT) pressed = x < -DEADZONE_BUTTON_STICK;
                     break;
+                }
                 case BUTTON_STICK_RIGHT_UP:
                 case BUTTON_STICK_RIGHT_DOWN:
                 case BUTTON_STICK_RIGHT_LEFT:
-                case BUTTON_STICK_RIGHT_RIGHT:
-                    pressed = GamepadStickLength(device, STICK_RIGHT) > 0.1 &&
-                                        ((int)GamepadStickDir(device, STICK_RIGHT) == ((button - BUTTON_STICK_RIGHT_UP) + 1));
+                case BUTTON_STICK_RIGHT_RIGHT: {
+                    float x = 0, y = 0, len = GamepadStickLength(device, STICK_RIGHT);
+                    GamepadStickNormXY(device, STICK_RIGHT, &x, &y);
+                    x *= len;
+                    y *= len;
+                    if (button == BUTTON_STICK_RIGHT_UP) pressed = y > DEADZONE_BUTTON_STICK;
+                    if (button == BUTTON_STICK_RIGHT_DOWN) pressed = y < -DEADZONE_BUTTON_STICK;
+                    if (button == BUTTON_STICK_RIGHT_RIGHT) pressed = x > DEADZONE_BUTTON_STICK;
+                    if (button == BUTTON_STICK_RIGHT_LEFT) pressed = x < -DEADZONE_BUTTON_STICK;
                     break;
+                }
                 default:
                     break;
             }
@@ -1213,6 +1208,12 @@ uint16 GetSessionInputConfigurationSettings()
 {
     PRINT_DEBUG("TODO %s\n", __FUNCTION__);
     return 0;
+}
+
+// Set the trigger effect for a DualSense controller
+void SetDualSenseTriggerEffect( InputHandle_t inputHandle, const ScePadTriggerEffectParam *pParam )
+{
+    PRINT_DEBUG("TODO %s\n", __FUNCTION__);
 }
 
 void RunCallbacks()
