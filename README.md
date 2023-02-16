@@ -1,7 +1,7 @@
 About
 =====
 
-FFI bindings to `lobby_connect` from [Goldberg SteamEmu](https://gitlab.com/Mr_Goldberg/goldberg_emulator) [recompiled as a dll](https://gitlab.com/Mr_Goldberg/goldberg_emulator/-/issues/96).
+FFI bindings to `lobby_connect` from [Goldberg SteamEmu](https://gitlab.com/Mr_Goldberg/goldberg_emulator)  but [recompiled as a dll](https://gitlab.com/Mr_Goldberg/goldberg_emulator/-/issues/96).
 
 Discover people playing on the network using the Goldberg SteamEmu with the launch parameter to connect to their game.
 
@@ -52,11 +52,15 @@ Previous version(s) are CommonJS (CJS) with an ESM wrapper.
 
 Discover people playing on the network.
 
-Return an array of 'Player' object as follow:
+Return an array of `Player` object as:
 
-- name (string): player's name
-- appID (number): game's appid
-- connect (string): the launch parameter to connect to the player's game
+```ts
+{
+  name: string, //player's name
+  appID: number, //game's appid
+  connect: string //the launch parameter to connect to the player's game
+}
+```
 
 Build
 =====
