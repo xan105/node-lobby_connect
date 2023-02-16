@@ -1,12 +1,12 @@
 About
 =====
 
-Library to use `lobby_connect` from [Goldberg SteamEmu](https://gitlab.com/Mr_Goldberg/goldberg_emulator) in Node.js : discover people playing on the network using the Goldberg SteamEmu with the launch parameter to connect to their game.
+FFI bindings to `lobby_connect` from [Goldberg SteamEmu](https://gitlab.com/Mr_Goldberg/goldberg_emulator) [recompiled as a dll](https://gitlab.com/Mr_Goldberg/goldberg_emulator/-/issues/96).
 
-Using `node-ffi-napi` and `lobby_connect.exe` recompiled as a dll.<br/>
-cf: https://gitlab.com/Mr_Goldberg/goldberg_emulator/-/issues/96
+Discover people playing on the network using the Goldberg SteamEmu with the launch parameter to connect to their game.
 
-:bulb: Usage without Node/JavaScript is also [explained down below](https://github.com/xan105/node-lobby_connect#usage-without-node--javascript).
+This can be used in Node.js/Electron.<br/>
+💡 Usage without Node/JavaScript is also [explained down below](https://github.com/xan105/node-lobby_connect#usage-without-node--javascript).
 
 Feel free to make a cool looking GUI for this 😃
 <p align="center">
@@ -18,10 +18,10 @@ Example
 =======
 
 ```js
-import lobby from "@xan105/lobby_connect";
+import { lobbyPlayerState } from "@xan105/lobby_connect";
 
 setInterval(function(){ 
-  lobby()
+  lobbyPlayerState()
   .then(console.log)
   .catch(console.error);
 }, 3000);
@@ -39,8 +39,6 @@ Install
 ```
 npm install @xan105/lobby_connect
 ```
-
-_Prerequisite: C/C++ build tools and Python 3.x (node-gyp) in order to build [node-ffi-napi](https://www.npmjs.com/package/ffi-napi)_
 
 API
 ===
