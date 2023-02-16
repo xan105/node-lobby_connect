@@ -1,7 +1,7 @@
-declare interface IPlayer {
+declare interface Player {
   name: string,
   appID: number,
   connect: string
 }
 
-export default function(): Promise<IPlayer[]>;
+export lobbyPlayerState(): Promise<Player[]>;

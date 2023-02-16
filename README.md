@@ -48,9 +48,9 @@ API
 ⚠️ This module is only available as an ECMAScript module (ESM) starting with version 2.0.0.<br />
 Previous version(s) are CommonJS (CJS) with an ESM wrapper.
 
-## Default export
+## Named export
 
-### `(): Promise<obj[]>`
+### `lobbyPlayerState(): Promise<obj[]>`
 
 Discover people playing on the network.
 
