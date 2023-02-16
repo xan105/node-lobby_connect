@@ -1,6 +1,6 @@
 {
   "name": "@xan105/lobby_connect",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Discover people playing on the network using the Goldberg SteamEmu with the launch parameter to connect to their game.",
   "type": "module",
   "exports": {
