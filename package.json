@@ -1,6 +1,6 @@
 {
   "name": "@xan105/lobby_connect",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "description": "Discover people playing on the network using the Goldberg SteamEmu with the launch parameter to connect to their game.",
   "type": "module",
   "exports": {
@@ -11,7 +11,7 @@
   },
   "types": "./types/index.d.ts",
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=20.18.0"
   },
   "scripts": {
     "build_x86": "call lib\\src\\goldberg_emulator\\build_win_lobby_connect_dll_x86.bat",
@@ -62,8 +62,8 @@
     "eslint": "^8.34.0"
   },
   "dependencies": {
-    "@xan105/error": "^1.6.2",
-    "@xan105/ffi": "^1.2.0",
-    "koffi": "^2.8.9"
+    "@xan105/error": "^1.7.1",
+    "@xan105/ffi": "^1.3.0",
+    "koffi": "^2.9.1"
   }
 }
